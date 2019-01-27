@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Code Exam - Chris Lyons</title>
+        <!--My style sheet-->
+        <link rel="stylesheet" href="styles.css">
+        <!--Leaflet css stylesheet-->
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.4.0/dist/leaflet.css" integrity="sha512-puBpdR0798OZvTTbP4A8Ix/l+A4dHDD0DGqYW6RQ+9jxkRFclaxxQb/SJAWZfWAkuyeQUytO7+7N4QKrDh+drA==" crossorigin=""/>
+        <!--Leaflet javascript file-->
+        <script src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js" integrity="sha512-QVftwZFqvtRNi0ZyCtsznlKSWOStnDORoefr1enyq5mVL4tmKB3S/EnC3rRJcxCPavG10IcrVGSmPh6Qw5lwrg==" crossorigin=""></script>
+        <!--Omnivore-->
+        <script src='https://api.tiles.mapbox.com/mapbox.js/plugins/leaflet-omnivore/v0.3.1/leaflet-omnivore.min.js'></script>
+        <script src='https://api.tiles.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v0.4.0/leaflet.markercluster.js'></script>
+        <link href='https://api.tiles.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v0.4.0/MarkerCluster.css' rel='stylesheet'>
+        <link href='https://api.tiles.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v0.4.0/MarkerCluster.Default.css' rel='stylesheet'>
+        <script src="http://code.jquery.com/jquery-1.11.3.min.js"></script>
+    </head>
+    <body>
+        <div class="header">
+            <h1><strong>Code Exam</strong></h1>
+            <h3>By: Chris Lyons</h3>
+        </div>
+        <div class="census">
+            <input class="btn" type="button" value="Show Male Census Blocks" onclick="showMale()" />
+            <input class="btn" type="button" value="Show Female Census Blocks" onclick="showFemale()" />
+            <input class="btn" type="button" value="Show Male/Female 15-17" onclick="showMaleFemale()" />
+            <input class="btn" type="button" value="Show Male/Female 70-74" onclick="showOldMaleFemale()" />
+        </div>
+        <br/>
+        <div class="social-media">
+            <input class="btn" type="button" value="Show Facebook Checkins" onclick="showFacebook()" />
+            <input class="btn" type="button" value="Show Tweets" onClick="showTwitter()" />
+        </div>
+        <br>
+        <div id="mapid">
+            <script>
+                var map = L.map('mapid').setView([35.0844, -106.6504], 11);
+                
+                L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
+                    attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+                    maxZoom: 18,
+                    id: 'mapbox.streets',
+                    accessToken: 'pk.eyJ1IjoiY2x5b25zIiwiYSI6ImNqcmNpM2FjYzE2aXo0NHJweGE1Y3F0cGYifQ.Ha_eZFiuq_qeY3Vg9ykPwQ'
+                    }).addTo(map);
+
+                //Facebook Checkin Markers
+               function showFacebook(){
+                    var markerFacebook = L.marker(omnivore.csv('data/FacebookPlaces_Albuquerque.csv').addTo(map));
+                };
+                
+                //Twitter Markers
+                function showTwitter(){
+                    var markerTwitter = L.marker(omnivore.csv('data/Twitter.csv').addTo(map));
+                };    
+
+                //Estimated Male Total Census Blocks
+                function showMale(){
+                $.getJSON("data/BernallioCensusBlocks_Joined.json", function(data){
+                    L.geoJson(data, {
+                        onEachFeature: function(feature, layer){
+                            layer.bindPopup("Estimate Male Total: " + feature.properties.ACS_13_5YR_B01001_with_ann_HD01_VD02 + "<br/>" + "Estimate Median Age: " + feature.properties.ACS_13_5YR_B01002_with_ann_HD01_VD02);
+                        }
+                    }).addTo(map);
+
+                });
+                };
+
+                //Estimated Female Census Blocks
+                function showFemale(){
+                $.getJSON("data/BernallioCensusBlocks_Joined.json", function(data){
+                    L.geoJson(data, {
+                        onEachFeature: function(feature, layer){
+                            layer.bindPopup("Estimate Female Total: " + feature.properties.ACS_13_5YR_B01001_with_ann_HD01_VD26 + "<br/>" + "Estimate Median Age: " + feature.properties.ACS_13_5YR_B01002_with_ann_HD01_VD02);
+                        }
+                    }).addTo(map);
+
+                });
+                };
+
+                //Estimated Male and Female 15 to 17 years of age
+                function showMaleFemale(){
+                $.getJSON("data/BernallioCensusBlocks_Joined.json", function(data){
+                    L.geoJson(data, {
+                        onEachFeature: function(feature, layer){
+                            layer.bindPopup("Estimate Total Males ages 15-17: " + feature.properties.ACS_13_5YR_B01001_with_ann_HD01_VD06 + "<br/>" + "Estimate Total Females ages 15-17: " + feature.properties.ACS_13_5YR_B01001_with_ann_HD01_VD30);
+                        }
+                    }).addTo(map);
+
+                });
+                };
+
+                //Estimated Male and Female 70 to 74 years of age
+                function showOldMaleFemale(){
+                $.getJSON("data/BernallioCensusBlocks_Joined.json", function(data){
+                    L.geoJson(data, {
+                        onEachFeature: function(feature, layer){
+                            layer.bindPopup("Estimate Total Males ages 70-74: " + feature.properties.ACS_13_5YR_B01001_with_ann_HD01_VD22 + "<br/>" + "Estimate Total Females ages 70-74: " + feature.properties.ACS_13_5YR_B01001_with_ann_HD01_VD46);
+                        }
+                    }).addTo(map);
+
+                });
+                };
+            </script>
+            
+    </body>
+</html>
